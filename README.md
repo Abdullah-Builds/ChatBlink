@@ -18,8 +18,8 @@ A professional, full-featured real-time chat application with video calling capa
 - [Project Structure](#project-structure)
 - [API Documentation](#api-documentation)
 - [Configuration](#configuration)
-- [Contributing](#contributing)
-- [License](#license)
+- [Development](#Development)
+- [Code Structure](#Code-Structure)
 
 ---
 
@@ -286,3 +286,6 @@ This will start the server with nodemon, which automatically restarts on file ch
 - **Constants**: Centralized configuration in `config/constants.js`
 - **Error Handling**: Comprehensive try-catch blocks and error events
 - **Validation**: Input validation for all user inputs
+
+
+### FIN.
