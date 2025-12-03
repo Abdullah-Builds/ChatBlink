@@ -2,16 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>2-Person Chatroom with Names</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Real-time chat application - Connect and chat with users instantly">
+  <title>Real-Time Chat | Chat Application</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     :root {
-      --bg:#0b1220;
-      --panel:#111a30;
-      --border:#26345c;
-      --text:#e7eefc;
-      --accent:#3b82f6;
+      --bg: #0b1220;
+      --panel: #111a30;
+      --border: #26345c;
+      --text: #e7eefc;
+      --accent: #3b82f6;
+      --error: #ef4444;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -20,13 +27,43 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      font-family: system-ui, sans-serif;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
     header {
       background: var(--panel);
       border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-title {
       font-weight: 600;
+      font-size: 1.25rem;
+      margin: 0;
+    }
+
+    .connection-status {
+      font-size: 0.875rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    .status-connected {
+      color: var(--success);
+    }
+
+    .status-disconnected {
+      color: var(--error);
+    }
+
+    .status-waiting {
+      color: #fbbf24;
     }
 
     #messages {
@@ -34,99 +71,279 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.75rem;
       padding: 1rem;
+      scroll-behavior: smooth;
+    }
+
+    #messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #messages::-webkit-scrollbar-track {
+      background: var(--panel);
+    }
+
+    #messages::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
     }
 
     .msg {
-      padding: 0.5rem 0.75rem;
+      padding: 0.75rem 1rem;
       border-radius: 12px;
-      max-width: 70%;
+      max-width: 75%;
       word-wrap: break-word;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .me {
       align-self: flex-end;
       background: var(--accent);
       color: #fff;
+      border-bottom-right-radius: 4px;
     }
 
     .other {
       align-self: flex-start;
       background: var(--panel);
       border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
     }
 
     .system {
       align-self: center;
       font-size: 0.875rem;
       opacity: 0.7;
+      background: transparent;
+      border: none;
+      padding: 0.5rem;
+      font-style: italic;
+    }
+
+    .error {
+      align-self: center;
+      color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid var(--error);
     }
 
     form {
       border-top: 1px solid var(--border);
       background: var(--panel);
-      padding: 0.5rem;
+      padding: 1rem;
     }
 
     input {
-      background: var(--panel);
+      background: var(--bg);
       color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    input:focus {
+      background: var(--bg);
+      color: var(--text);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
     }
 
     button {
+      background: var(--accent);
       color: #fff;
+      border: none;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .back-link {
+      color: var(--text);
+      text-decoration: none;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .back-link:hover {
+      opacity: 1;
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
-
-  <header class="p-2 text-center">💬 Random 2-Person Chat</header>
+  <header>
+    <div>
+      <h1 class="header-title">💬 Real-Time Chat</h1>
+      <span id="connectionStatus" class="connection-status status-waiting">Connecting...</span>
+    </div>
+    <a href="index.html" class="back-link">← Back to Home</a>
+  </header>
 
   <div id="messages" class="flex-grow-1"></div>
 
   <form id="chatForm" class="d-flex">
-    <input id="msgInput" class="form-control me-2" placeholder="Type a message..." autocomplete="off">
-    <button type="submit" class="btn">Send</button>
+    <input 
+      id="msgInput" 
+      class="form-control me-2" 
+      placeholder="Type a message..." 
+      autocomplete="off"
+      autofocus
+      disabled
+    >
+    <button type="submit" class="btn btn-primary" disabled>Send</button>
   </form>
   
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    
+    /**
+     * Real-Time Chat Application Client
+     * Handles Socket.IO communication and UI updates
+     */
+
+    // DOM Elements
     const socket = io();
     const form = document.getElementById("chatForm");
     const input = document.getElementById("msgInput");
     const messagesDiv = document.getElementById("messages");
+    const connectionStatus = document.getElementById("connectionStatus");
+    const sendButton = form.querySelector("button");
 
-    
-    const username = prompt("Enter your name:") || "Guest";
-    socket.emit("setName", username);
+    // Application State
+    let username = null;
+    let isConnected = false;
 
-    function addMessage(msg, type="other") {
+    /**
+     * Update connection status indicator
+     */
+    function updateConnectionStatus(status, text) {
+      connectionStatus.className = `connection-status status-${status}`;
+      connectionStatus.textContent = text;
+    }
+
+    /**
+     * Enable/disable input form
+     */
+    function setFormEnabled(enabled) {
+      input.disabled = !enabled;
+      sendButton.disabled = !enabled;
+      if (enabled) {
+        input.focus();
+      }
+    }
+
+    /**
+     * Add a message to the chat interface
+     * @param {string} msg - Message text
+     * @param {string} type - Message type: 'me', 'other', 'system', 'error'
+     */
+    function addMessage(msg, type = "other") {
       const div = document.createElement("div");
       div.classList.add("msg");
-      if (type === "me") div.classList.add("me");
-      else if (type === "system") div.classList.add("system");
-      else div.classList.add("other");
+      
+      if (type === "me") {
+        div.classList.add("me");
+      } else if (type === "system") {
+        div.classList.add("system");
+      } else if (type === "error") {
+        div.classList.add("error");
+      } else {
+        div.classList.add("other");
+      }
+      
       div.textContent = msg;
       messagesDiv.appendChild(div);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (input.value.trim() === "") return;
-      addMessage(`${input.value}`, "me");
-      socket.emit("chatMessage", input.value);
-      input.value = "";
+    // Socket.IO Event Handlers
+
+    socket.on("connect", () => {
+      isConnected = true;
+      updateConnectionStatus("connected", "Connected");
+      
+      // Prompt for username
+      username = prompt("Enter your name:")?.trim() || "Guest";
+      if (username) {
+        socket.emit("setName", username);
+        addMessage(`Welcome, ${username}!`, "system");
+      }
+    });
+
+    socket.on("disconnect", () => {
+      isConnected = false;
+      updateConnectionStatus("disconnected", "Disconnected");
+      setFormEnabled(false);
+      addMessage("Connection lost. Please refresh the page.", "error");
+    });
+
+    socket.on("connect_error", (error) => {
+      updateConnectionStatus("disconnected", "Connection Error");
+      addMessage("Failed to connect to server.", "error");
+      console.error("Connection error:", error);
     });
 
     socket.on("chatMessage", (msg) => {
-      addMessage(` ${msg.text}`, "other");
+      if (msg && msg.text) {
+        addMessage(msg.text, "other");
+      }
     });
 
     socket.on("system", (msg) => {
       addMessage(msg, "system");
+      
+      // Enable form when partner is connected
+      if (msg.includes("connected")) {
+        setFormEnabled(true);
+        updateConnectionStatus("connected", "Chat Active");
+      }
+    });
+
+    socket.on("error", (msg) => {
+      addMessage(`Error: ${msg}`, "error");
+    });
+
+    // Form Submission Handler
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      
+      const message = input.value.trim();
+      if (!message || !isConnected) return;
+      
+      // Add message to UI immediately
+      addMessage(message, "me");
+      
+      // Send to server
+      socket.emit("chatMessage", message);
+      
+      // Clear input
+      input.value = "";
+      input.focus();
+    });
+
+    // Keyboard shortcuts
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event("submit"));
+      }
     });
   </script>
 </body>

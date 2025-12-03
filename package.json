@@ -1,17 +1,35 @@
 {
-  "name": "simple-chat",
-  "version": "1.0.0",
-  "description": "Simple one-to-one chat with Node.js and Socket.IO",
-  "main": "server.js",
+  "name": "real-time-chat-app",
+  "version": "2.0.0",
+  "description": "A professional real-time chat application with video calling capabilities built with Node.js, Express, Socket.IO, and WebRTC",
+  "main": "src/server.js",
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "chat",
+    "real-time",
+    "socket.io",
+    "webrtc",
+    "video-call",
+    "messaging",
+    "nodejs",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
     "express": "^5.1.0",
-    "http": "^0.0.1-security",
-    "nodemon": "^3.1.10",
-    "socket": "^1.0.92",
     "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   }
 }
